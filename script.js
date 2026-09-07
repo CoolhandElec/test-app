@@ -1,192 +1,272 @@
-// To-Do List App with Local Storage
+// Digital Clock with Multiple Timezones
 
-class TodoApp {
+class DigitalClock {
     constructor() {
-        this.todos = this.loadTodos();
-        this.currentFilter = 'all';
+        this.timezones = this.loadTimezones();
+        this.use24Hour = localStorage.getItem('use24Hour') !== 'false';
+        this.allTimezones = this.getAvailableTimezones();
         this.init();
     }
 
     init() {
         this.setupEventListeners();
+        this.updateTime();
+        setInterval(() => this.updateTime(), 1000);
         this.render();
     }
 
     setupEventListeners() {
-        // Add task
-        document.getElementById('addBtn').addEventListener('click', () => this.addTodo());
-        document.getElementById('todoInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.addTodo();
+        document.getElementById('addBtn').addEventListener('click', () => this.addTimezone());
+        document.getElementById('timezoneInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.addTimezone();
         });
-
-        // Filters
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                this.currentFilter = e.target.dataset.filter;
-                this.render();
-            });
+        document.getElementById('timezoneInput').addEventListener('input', (e) => {
+            this.showSuggestions(e.target.value);
         });
-
-        // Clear buttons
-        document.getElementById('clearCompletedBtn').addEventListener('click', () => this.clearCompleted());
-        document.getElementById('clearAllBtn').addEventListener('click', () => this.clearAll());
+        document.getElementById('use24Hour').addEventListener('change', (e) => {
+            this.use24Hour = e.target.checked;
+            localStorage.setItem('use24Hour', this.use24Hour);
+            this.updateTime();
+        });
     }
 
-    addTodo() {
-        const input = document.getElementById('todoInput');
-        const text = input.value.trim();
+    getAvailableTimezones() {
+        return [
+            'America/New_York',
+            'America/Chicago',
+            'America/Denver',
+            'America/Los_Angeles',
+            'America/Anchorage',
+            'Pacific/Honolulu',
+            'Europe/London',
+            'Europe/Paris',
+            'Europe/Berlin',
+            'Europe/Madrid',
+            'Europe/Rome',
+            'Europe/Amsterdam',
+            'Europe/Istanbul',
+            'Europe/Moscow',
+            'Asia/Dubai',
+            'Asia/Kolkata',
+            'Asia/Bangkok',
+            'Asia/Singapore',
+            'Asia/Hong_Kong',
+            'Asia/Shanghai',
+            'Asia/Tokyo',
+            'Asia/Seoul',
+            'Australia/Sydney',
+            'Australia/Melbourne',
+            'Australia/Brisbane',
+            'Australia/Perth',
+            'Pacific/Auckland',
+            'Pacific/Fiji',
+            'Africa/Cairo',
+            'Africa/Johannesburg',
+            'Africa/Lagos',
+            'America/Sao_Paulo',
+            'America/Buenos_Aires',
+            'America/Toronto',
+            'America/Mexico_City',
+        ];
+    }
 
-        if (!text) {
-            alert('Please enter a task');
+    showSuggestions(query) {
+        const container = document.getElementById('suggestionsContainer');
+        
+        if (!query.trim()) {
+            container.classList.add('hidden');
             return;
         }
 
-        const todo = {
-            id: Date.now(),
-            text: text,
-            completed: false,
-            createdAt: new Date().toLocaleString(),
-            priority: 'medium'
-        };
+        const matches = this.allTimezones.filter(tz => {
+            const city = tz.split('/')[1].replace(/_/g, ' ');
+            return city.toLowerCase().includes(query.toLowerCase());
+        }).slice(0, 8);
 
-        this.todos.unshift(todo);
-        this.saveTodos();
+        if (matches.length === 0) {
+            container.classList.add('hidden');
+            return;
+        }
+
+        container.innerHTML = matches.map(tz => `
+            <div class="suggestion-item" data-timezone="${tz}">
+                ${tz.split('/')[1].replace(/_/g, ' ')}
+            </div>
+        `).join('');
+
+        container.classList.remove('hidden');
+
+        container.querySelectorAll('.suggestion-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const tz = item.dataset.timezone;
+                this.addTimezoneByName(tz);
+                container.classList.add('hidden');
+                document.getElementById('timezoneInput').value = '';
+            });
+        });
+    }
+
+    addTimezone() {
+        const input = document.getElementById('timezoneInput');
+        this.addTimezoneByName(input.value.trim());
         input.value = '';
-        input.focus();
-        this.render();
     }
 
-    toggleTodo(id) {
-        const todo = this.todos.find(t => t.id === id);
-        if (todo) {
-            todo.completed = !todo.completed;
-            this.saveTodos();
+    addTimezoneByName(name) {
+        if (!name) return;
+
+        // Check if already added
+        if (this.timezones.some(tz => tz === name)) {
+            alert('This timezone is already added');
+            return;
+        }
+
+        // Validate timezone
+        try {
+            new Date().toLocaleString('en-US', { timeZone: name });
+            this.timezones.push(name);
+            this.saveTimezones();
             this.render();
+        } catch (e) {
+            alert('Invalid timezone. Please select from suggestions.');
         }
     }
 
-    deleteTodo(id) {
-        this.todos = this.todos.filter(t => t.id !== id);
-        this.saveTodos();
+    removeTimezone(tz) {
+        this.timezones = this.timezones.filter(t => t !== tz);
+        this.saveTimezones();
         this.render();
     }
 
-    clearCompleted() {
-        if (this.todos.some(t => t.completed)) {
-            if (confirm('Are you sure you want to delete all completed tasks?')) {
-                this.todos = this.todos.filter(t => !t.completed);
-                this.saveTodos();
-                this.render();
-            }
+    updateTime() {
+        // Update main clock (local time)
+        const now = new Date();
+        document.getElementById('mainTime').textContent = this.formatTime(now);
+        document.getElementById('mainDate').textContent = this.formatDate(now);
+
+        // Update timezone clocks
+        document.querySelectorAll('.timezone-card').forEach(card => {
+            const tz = card.dataset.timezone;
+            const time = this.getTimeInTimezone(tz);
+            card.querySelector('.tz-time').textContent = this.formatTime(time);
+            card.querySelector('.tz-date').textContent = this.formatDate(time);
+        });
+    }
+
+    formatTime(date) {
+        if (this.use24Hour) {
+            return date.toLocaleTimeString('en-US', { 
+                hour24: true, 
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
         } else {
-            alert('No completed tasks to clear');
+            return date.toLocaleTimeString('en-US', { 
+                hour12: true, 
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
         }
     }
 
-    clearAll() {
-        if (this.todos.length > 0) {
-            if (confirm('Are you sure you want to delete ALL tasks? This cannot be undone.')) {
-                this.todos = [];
-                this.saveTodos();
-                this.render();
-            }
-        } else {
-            alert('No tasks to clear');
-        }
+    formatDate(date) {
+        return date.toLocaleDateString('en-US', {
+            weekday: 'short',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
     }
 
-    getFilteredTodos() {
-        switch (this.currentFilter) {
-            case 'active':
-                return this.todos.filter(t => !t.completed);
-            case 'completed':
-                return this.todos.filter(t => t.completed);
-            default:
-                return this.todos;
-        }
+    getTimeInTimezone(tz) {
+        const date = new Date();
+        const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+        const tzTime = new Date(utc + (3600000 * this.getTimezoneOffset(tz)));
+        return tzTime;
     }
 
-    updateStats() {
-        const total = this.todos.length;
-        const completed = this.todos.filter(t => t.completed).length;
-        const active = total - completed;
+    getTimezoneOffset(tz) {
+        const date = new Date();
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: tz,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
 
-        document.getElementById('totalCount').textContent = total;
-        document.getElementById('activeCount').textContent = active;
-        document.getElementById('completedCount').textContent = completed;
+        const parts = formatter.formatToParts(date);
+        const tzDate = new Date(
+            parseInt(parts.find(p => p.type === 'year').value),
+            parseInt(parts.find(p => p.type === 'month').value) - 1,
+            parseInt(parts.find(p => p.type === 'day').value),
+            parseInt(parts.find(p => p.type === 'hour').value),
+            parseInt(parts.find(p => p.type === 'minute').value),
+            parseInt(parts.find(p => p.type === 'second').value)
+        );
+
+        return (tzDate - date) / 3600000;
+    }
+
+    getTimezoneOffset2(tz) {
+        const now = new Date();
+        const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
+        const tzDate = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+        return (tzDate - utcDate) / (1000 * 60 * 60);
     }
 
     render() {
-        const todoList = document.getElementById('todoList');
+        const grid = document.getElementById('timezonesGrid');
         const emptyState = document.getElementById('emptyState');
-        const filteredTodos = this.getFilteredTodos();
 
-        // Update stats
-        this.updateStats();
-
-        // Clear list
-        todoList.innerHTML = '';
-
-        // Show empty state if needed
-        if (filteredTodos.length === 0) {
+        if (this.timezones.length === 0) {
+            grid.innerHTML = '';
             emptyState.classList.remove('hidden');
             return;
         }
 
         emptyState.classList.add('hidden');
+        grid.innerHTML = this.timezones.map(tz => {
+            const time = this.getTimeInTimezone(tz);
+            const city = tz.split('/')[1].replace(/_/g, ' ');
+            const offset = this.getTimezoneOffset(tz);
+            const offsetStr = offset >= 0 ? `+${offset.toFixed(1)}` : offset.toFixed(1);
 
-        // Render todos
-        filteredTodos.forEach(todo => {
-            const li = document.createElement('li');
-            li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
-            li.innerHTML = `
-                <input 
-                    type="checkbox" 
-                    class="checkbox" 
-                    ${todo.completed ? 'checked' : ''}
-                    data-id="${todo.id}"
-                >
-                <span class="todo-text">${this.escapeHtml(todo.text)}</span>
-                <span class="priority-badge ${todo.priority}">${this.capitalize(todo.priority)}</span>
-                <button class="delete-btn" data-id="${todo.id}">Delete</button>
+            return `
+                <div class="timezone-card" data-timezone="${tz}">
+                    <div class="tz-name">${city}</div>
+                    <div class="tz-time">${this.formatTime(time)}</div>
+                    <div class="tz-date">${this.formatDate(time)}</div>
+                    <div class="tz-offset">UTC ${offsetStr}</div>
+                    <button class="remove-btn" data-timezone="${tz}">Remove</button>
+                </div>
             `;
+        }).join('');
 
-            // Add event listeners
-            li.querySelector('.checkbox').addEventListener('change', (e) => {
-                this.toggleTodo(parseInt(e.target.dataset.id));
+        // Add event listeners to remove buttons
+        grid.querySelectorAll('.remove-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.removeTimezone(btn.dataset.timezone);
             });
-
-            li.querySelector('.delete-btn').addEventListener('click', (e) => {
-                this.deleteTodo(parseInt(e.target.dataset.id));
-            });
-
-            todoList.appendChild(li);
         });
     }
 
-    saveTodos() {
-        localStorage.setItem('todos', JSON.stringify(this.todos));
+    saveTimezones() {
+        localStorage.setItem('timezones', JSON.stringify(this.timezones));
     }
 
-    loadTodos() {
-        const stored = localStorage.getItem('todos');
+    loadTimezones() {
+        const stored = localStorage.getItem('timezones');
         return stored ? JSON.parse(stored) : [];
-    }
-
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    capitalize(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1);
     }
 }
 
-// Initialize app when DOM is ready
+// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    new TodoApp();
+    new DigitalClock();
 });

@@ -3,52 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>To-Do List App</title>
+    <title>Digital Clock - Multi Timezone</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>✓ My To-Do List</h1>
-            <p class="subtitle">Stay organized and productive</p>
+            <h1>🕐 Digital Clock</h1>
+            <p class="subtitle">View time across the world</p>
         </header>
 
-        <div class="input-section">
-            <input 
-                type="text" 
-                id="todoInput" 
-                placeholder="Add a new task..." 
-                class="todo-input"
-                autocomplete="off"
-            >
-            <button id="addBtn" class="add-btn">Add Task</button>
+        <div class="main-clock-section">
+            <div class="local-clock">
+                <div class="clock-display">
+                    <div id="mainTime" class="main-time">00:00:00</div>
+                    <div id="mainDate" class="main-date">Monday, January 1, 2024</div>
+                    <div id="mainTimezone" class="main-timezone">Local Time</div>
+                </div>
+            </div>
         </div>
 
-        <div class="filters">
-            <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn" data-filter="active">Active</button>
-            <button class="filter-btn" data-filter="completed">Completed</button>
+        <div class="controls">
+            <div class="search-section">
+                <input 
+                    type="text" 
+                    id="timezoneInput" 
+                    placeholder="Search timezone (e.g., New York, Tokyo, London)..." 
+                    class="timezone-input"
+                >
+                <button id="addBtn" class="add-btn">+ Add Timezone</button>
+            </div>
+
+            <div class="format-toggle">
+                <label>
+                    <input type="checkbox" id="use24Hour" checked>
+                    <span>24-Hour Format</span>
+                </label>
+            </div>
         </div>
 
-        <div class="stats">
-            <span><strong id="totalCount">0</strong> Total</span>
-            <span><strong id="activeCount">0</strong> Active</span>
-            <span><strong id="completedCount">0</strong> Completed</span>
+        <div id="suggestionsContainer" class="suggestions hidden"></div>
+
+        <div class="timezones-grid" id="timezonesGrid">
+            <!-- Timezone clocks will be added here -->
         </div>
 
-        <ul id="todoList" class="todo-list"></ul>
-
-        <div id="emptyState" class="empty-state hidden">
-            <p>📝 No tasks yet. Add one to get started!</p>
-        </div>
-
-        <div class="action-buttons">
-            <button id="clearCompletedBtn" class="clear-btn">Clear Completed</button>
-            <button id="clearAllBtn" class="clear-all-btn">Clear All</button>
+        <div id="emptyState" class="empty-state">
+            <p>🌍 Add timezones to see multiple clocks</p>
         </div>
 
         <footer>
-            <p>Your tasks are automatically saved to your device</p>
+            <p>All times are synchronized and update every second</p>
         </footer>
     </div>
 

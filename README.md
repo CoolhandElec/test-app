@@ -1,88 +1,110 @@
-# To-Do List Application
+# Digital Clock with Multiple Time Zones
 
-A feature-rich to-do list app with persistent local storage, filters, and a beautiful UI.
+A beautiful, real-time digital clock application that displays the current time in different time zones around the world.
 
 ## Features
 
-✅ **Task Management**
-- Add, complete, and delete tasks
-- Tasks are automatically saved to your browser's local storage
-- Data persists even after closing the browser
+🕐 **Real-Time Clock**
+- Main clock displays local time with live seconds
+- Updates automatically every second
+- Shows date and timezone information
 
-🔍 **Filtering Options**
-- View all tasks
-- Filter by active tasks
-- Filter by completed tasks
-- Real-time statistics
+🌍 **Multiple Timezones**
+- Add clocks for different cities and timezones
+- View time simultaneously across multiple locations
+- Easy search and add functionality
+- Shows UTC offset for each timezone
 
-📊 **Statistics Dashboard**
-- Total tasks count
-- Active tasks count
-- Completed tasks count
+🔍 **Smart Search**
+- Search timezones by city name
+- Auto-complete suggestions
+- Quick selection from suggestions
+- 30+ major world cities and timezones
 
-🎯 **Priority Levels**
-- Assign priority to tasks (High, Medium, Low)
-- Visual priority badges
-- Color-coded priorities
+⏰ **Time Format Options**
+- Toggle between 24-hour and 12-hour format
+- Format preference is saved locally
+- Consistent formatting across all clocks
 
-🧹 **Bulk Actions**
-- Clear all completed tasks
-- Clear all tasks at once
-- Confirmation dialogs to prevent accidental deletion
-
-📱 **Responsive Design**
-- Works perfectly on desktop, tablet, and mobile
-- Touch-friendly interface
-- Smooth animations and transitions
+💾 **Persistent Storage**
+- Your timezone selections are saved in local storage
+- Time format preference is remembered
+- Data persists across browser sessions
 
 🎨 **Beautiful UI**
-- Modern gradient design
-- Smooth animations
-- Intuitive user interface
-- Visual feedback on interactions
+- Neon-style digital clock display
+- Smooth animations and transitions
+- Responsive design for all devices
+- Dark theme with accent colors
+- Glowing effects on clock displays
+
+📱 **Responsive Design**
+- Works on desktop, tablet, and mobile
+- Grid layout adapts to screen size
+- Touch-friendly interface
 
 ## How to Use
 
-1. **Add a Task**: Type in the input field and click "Add Task" or press Enter
-2. **Complete a Task**: Click the checkbox next to a task to mark it as complete
-3. **Delete a Task**: Click the "Delete" button on any task
-4. **Filter Tasks**: Use the filter buttons to view All, Active, or Completed tasks
-5. **Clear Tasks**: Use the action buttons to clear completed or all tasks
+1. **View Local Time**: Main clock shows your local time automatically
+2. **Add Timezone**: 
+   - Type a city name in the search box (e.g., "Tokyo", "London", "New York")
+   - Select from suggestions
+   - Click "+ Add Timezone" or press Enter
+3. **Remove Timezone**: Click the "Remove" button on any timezone card
+4. **Change Format**: Toggle the "24-Hour Format" checkbox to switch between 12-hour and 24-hour format
 
-## Local Storage
+## Available Timezones
 
-All your tasks are automatically saved to your browser's local storage:
-- Tasks persist across browser sessions
-- No server or internet connection required
-- Completely private - data stays on your device
-- Clear browser data to reset all tasks
+The app includes major cities from these regions:
+- North America (New York, Chicago, Denver, Los Angeles, etc.)
+- South America (São Paulo, Buenos Aires)
+- Europe (London, Paris, Berlin, Rome, Moscow, etc.)
+- Africa (Cairo, Johannesburg, Lagos)
+- Asia (Dubai, India, Bangkok, Singapore, Hong Kong, Tokyo, Seoul)
+- Australia & Pacific (Sydney, Melbourne, Auckland, Fiji)
 
 ## Technologies Used
 
 - **HTML5** - Semantic structure
-- **CSS3** - Modern styling with gradients and animations
-- **JavaScript (ES6)** - Object-oriented programming with local storage API
-- **Local Storage API** - Browser data persistence
+- **CSS3** - Modern styling with gradients, animations, and backdrop filters
+- **JavaScript (ES6)** - Object-oriented programming with Intl API
+- **Intl DateTimeFormat API** - Accurate timezone conversions
+- **Local Storage API** - User preferences persistence
 
-## Data Structure
+## Data Storage
 
-Each task is stored as an object with:
+Locally stored data includes:
 ```javascript
 {
-    id: timestamp,
-    text: "Task description",
-    completed: false,
-    createdAt: "Date string",
-    priority: "medium" // high, medium, low
+    timezones: ["America/New_York", "Asia/Tokyo", ...],
+    use24Hour: true/false
 }
 ```
+
+## Key Features Explained
+
+### Timezone Search
+- Supports city name search
+- Real-time filtering of suggestions
+- Auto-scroll through available options
+
+### Real-Time Updates
+- Uses native `Intl.DateTimeFormat` API for accurate timezone conversion
+- Updates every second without lag
+- Maintains synchronization across all clocks
+
+### Offset Calculation
+- Automatically calculates UTC offset for each timezone
+- Accounts for daylight saving time changes
+- Displays offset in hours (e.g., +5.5, -8)
 
 ## Files
 
 - `index.html` - HTML structure with semantic markup
-- `styles.css` - Modern styling with animations
-- `script.js` - TodoApp class with full functionality
+- `styles.css` - Neon-style styling with animations
+- `script.js` - DigitalClock class with timezone management
+- `README.md` - Documentation
 
 ---
 
-Made with ❤️ for productivity enthusiasts
+Made with ❤️ for global time tracking
